@@ -1,0 +1,451 @@
+---
+title: "Bellabeat Wellness Analysis"
+author: "EsserM"
+date: "2024-06-06"
+output: html_document
+---
+# Background and Scenario 
+
+I am asked to work with the marketing analyst team at Bellabeat, a high-tech manufacturer of health-focused products for women. 
+
+In 2016, Bellabeat launched multiple products, available through a growing number of online retailers in addition to their own e-commerce channel on their website. The company has advertised in traditional advertising media, such as radio, out-of-home billboards, print, and television, but focuses on digital marketing extensively. Bellabeat invests in Google Search, Facebook, Instagram pages, and Twitter, and YouTube ads. Bellabeat is a successful small company, but they have the potential to become a larger player in the global smart device market.
+
+
+Urška Sršen, cofounder and Chief Creative Officer of Bellabeat, believes that analyzing smart device fitness data could help unlock new product growth opportunities. I have been asked to focus on one of Bellabeat’s products and analyze smart device data to gain insight into how consumers are using their smart devices. The insights we discover will then help guide marketing strategy for the company. I will present my analysis to the Bellabeat executive team along with my high-level recommendations for Bellabeat’s marketing strategy.
+
+### Products
+* **Bellabeat app**: The Bellabeat app provides users with health data related to their activity, sleep, stress, menstrual cycle, and mindfulness habits. This data can help users better understand their current habits and make healthy decisions. The Bellabeat app connects to their line of smart wellness products.
+* **Leaf**: Bellabeat’s classic wellness tracker can be worn as a bracelet, necklace, or clip. The Leaf tracker connects
+to the Bellabeat app to track activity, sleep, and stress.
+* **Time**: This wellness watch combines the timeless look of a classic timepiece with smart technology to track user
+activity, sleep, and stress. The Time watch connects to the Bellabeat app to provide you with insights into your daily wellness.
+
+## ASK Questions
+
+I use these questions to guide my analysis:
+What are some trends in smart device usage? How could these trends apply to Bellabeat customers? How could these trends help influence Bellabeat’s marketing strategy?
+
+#### The problems I am trying to solve:
+* Can we increase the market share of Bellabeat and how?
+* Is there an area Bellabeat need to improve in order to gain more users?
+
+
+My insights can drive business decisions: 
+
+* By knowing where Bellabeat is behind in the sales market
+* By identifying more potential stakeholders who are interested in buying Bellabeat
+
+## PREPARE 
+I use the following dataset: 
+
+** Fitbit Fitness Tracker from [Möbius Fitbit](https://www.kaggle.com/datasets/arashnic/fitbit/data) ** : 
+It has records on daily and night activity in exercise, heart rates as well as weight log records.
+
+The csv files are conventionally named in an organized format in the same folder, therefore, there is no need to rename them.  
+
+#### ROCCC evaluation
+* Reliable: **Low** - The records are collected from individuals without known gender
+* Original: **Low** - The records are collected via third-party
+* Comprehensive: **Medium** - The dataset includes detailed aspects of day activities, sleep patterns, heart rate and multiple variables for each entry.
+* Current: **Low** - The dataset contains data from 2016, which is not very current. However, for the research goals, the data from 2016 might still be relevant. 
+* Cited: **High** - The dataset source and collector has adequate documentation.
+
+## PROCESS
+
+### Installing R packages
+# Set a CRAN mirror
+
+```{r}
+options(repos = c(CRAN = "https://cran.rstudio.com/"))
+```
+
+```{r setup, include=FALSE}
+knitr::opts_knit$set(root.dir = "d:/R_projects/Bellabeat")
+```
+
+```{r}
+# Create the directory if it doesn't exist
+if (!dir.exists("d:/R_projects/Bellabeat")) {
+  dir.create("d:/R_projects/Bellabeat", recursive = TRUE)
+}
+
+# Set the working directory
+setwd("d:/R_projects/Bellabeat")
+```
+
+
+I use the following R packages and require their installation
+
+```{r}
+install.packages("tidyverse")
+install.packages("lubridate")
+install.packages("dplyr")
+install.packages("ggplot2")
+install.packages("tidyr")
+install.packages("skimr")
+install.packages("janitor")
+```
+
+### Loading and executing R packages
+
+```{r}
+library(tidyverse)
+library(lubridate)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(skimr)
+library(janitor)
+```
+
+### Importing datasets:
+
+#### Verify the working directory and the list the files in the target directory to confirm the CVS files
+```{r}
+getwd()
+list.files()
+list.files("Fitabase Data 3.12.16-4.11.16")
+```
+#### Now I will set the working directly outside of the downloaded folder that has the CSV files
+
+```{r}
+setwd("d:/R_Projects/Bellabeat")
+```
+
+I will import the following csv files that are wide formats: 
+```{r}
+dailyActivity <- read.csv("Fitabase Data 4.12.16-5.12.16/dailyActivity_merged.csv")
+hourlyCalories <- read.csv("Fitabase Data 4.12.16-5.12.16/hourlyCalories_merged.csv")
+hourlyIntensities <- read.csv("Fitabase Data 4.12.16-5.12.16/hourlyIntensities_merged.csv")
+sleep <- read.csv("Fitabase Data 4.12.16-5.12.16/sleepDay_merged.csv")
+weightLog <- read.csv("Fitabase Data 4.12.16-5.12.16/weightLogInfo_merged.csv")
+
+```
+### Let's check the data to make sure everything looks correct by using the View() or Head() functions.
+```{r}
+View(dailyActivity)
+View(hourlyCalories) 
+View(hourlyIntensities) 
+View(sleep) 
+View(weightLog) 
+```
+At first glance, most of the data looks fine. 
+
+Let's do some inspection of the data types by using the str() function: 
+```{r}
+str(dailyActivity)
+
+str(hourlyCalories)
+
+str(hourlyIntensities)
+
+str(sleep)
+
+str(weightLog)
+```
+
+The noticeable issues I found besides some missing data inconsistencies (N/A) are as of the following:
+
+* For best practice, name columns in camelCase
+* These columns should be formatted in the date type and not in the chr type
+  * dailyActivity$ActivityDate 
+  * hourlyCalories$ActivityHour
+  * hourlyIntensities$ActivityHour
+  * sleep$SleepDay 
+  * weightLog$Date 
+  
+* Also, weightLog$IsManualReport is currently a chr type and should be a boolean type
+
+### Cleaning data:
+1) Renaming columns according to best practices using the clean_name() function:
+
+```{r}
+dailyActivity <- clean_names(dailyActivity)
+hourlyCalories <- clean_names(hourlyCalories)
+hourlyIntensities <- clean_names(hourlyIntensities)
+sleep <- clean_names(sleep)
+weightLog <- clean_names(weightLog)
+```
+2) Now, we can format any date/time column that has chr date type into date type using the as.Date() function. Make sure the "janitor" package is installed and also loaded. 
+```{r}
+dailyActivity$activityDate <- as.Date(dailyActivity$activity_date, '%m/%d/%y')
+sleep$sleepDate <- as.Date(sleep$sleep_day, '%m/%d/%y')
+
+```
+3) Now for the rest of the data sets, using the mutate() function, I am going to duplicate the current date/time column which consist of date and time and name. Then I will divide the duplicated column (activityHour) into a column called "activityDate" and another column called "activityTime". Make sure the "lubridate" package is loaded.
+
+```{r}
+hourlyCalories <- hourlyCalories %>%
+  mutate(activityHour = mdy_hms(activity_hour),
+         activityDate = date(activityHour),
+         activityTime = format(activityHour,format = "%I:%M %P")) # by hour/AM PM
+
+hourlyIntensities <- hourlyIntensities %>%
+  mutate(activityHour = mdy_hms(activity_hour),
+         activityDate = date(activityHour),
+         activityTime = format(activityHour,format = "%I:%M %P")) # by hour/AM PM
+str(hourlyIntensities)
+
+
+weightLog <-weightLog %>%
+  mutate(activityHour = mdy_hms(date),
+         activityDate = date(activityHour),
+         activityTime = format(activityHour, format= "%I:%M %P"))
+str(weightLog)
+
+
+```
+4) Then to format is_manual_report in weightLog from chr type to boolean type, we will use the as.logical() function.
+
+```{r}
+weightLog$is_manual_report <- as.logical(weightLog$is_manual_report)
+```
+
+6) Everything looks good but we could ask more derived data such as weekday and some of the aggregate data for later use.
+
+```{r}
+dailyActivity$weekday <-wday(dailyActivity$activityDate, label=T, abbr = T)
+dailyActivity$totalActiveHours = round((dailyActivity$very_active_minutes +   dailyActivity$fairly_active_minutes + dailyActivity$lightly_active_minutes)/60, digit =2)
+dailyActivity$sedentaryHours = round((dailyActivity$sedentary_minutes)/60, digits = 2)
+
+sleep$hoursInBed = round((sleep$total_time_in_bed)/60, digits = 2)
+sleep$hoursAsleep = round((sleep$total_minutes_asleep)/60, digits = 2)
+sleep$minutesAwake = (sleep$total_time_in_bed - sleep$total_minutes_asleep) 
+```
+
+7) Let's also find out the number of participants for each of the dataset by using the n_distinct() function.
+```{r}
+n_distinct(dailyActivity$id)
+n_distinct(hourlyCalories$id)
+n_distinct(hourlyIntensities$id)
+n_distinct(sleep$id)
+n_distinct(weightLog$id)
+```
+8) We should also remove any obvious outliers, such as if the totalActiveHours, calories, sedentary_minutes are 0.
+
+```{r}
+dailyActivityCleaned <- dailyActivity[!(dailyActivity$calories<=0),]
+dailyActivityCleaned <- dailyActivity[!(dailyActivity$sedentary_minutes<=0), ]
+dailyActivityCleaned <- dailyActivity[!(dailyActivity$totalActiveHours<=0), ]
+```
+
+## ANALYZE using RStudio posit cloud
+
+1) Let's look at the statistics summary of the datasets:
+
+```{r}
+# total steps taken, distance taken, sedentary duration from dailyActivityCleaned 
+
+dailyActivityCleaned %>% 
+  select(total_steps,
+         total_distance,
+         sedentary_minutes, calories) %>%
+  summary()
+
+# active minutes by category from dailyActivityCleaned
+dailyActivityCleaned %>%
+  select(very_active_minutes, fairly_active_minutes, lightly_active_minutes) %>%
+  summary()
+
+# sleep
+# sleep %>%
+  #select (total_time_in_bed, total_minutes_asleep, minutesAwake )
+sleep %>%  
+  select (hoursInBed, hoursAsleep) %>%
+  summary()
+
+# weight
+weightLog %>%
+  select (weight_kg, bmi) %>%
+  summary()
+```
+#### Discovery from the above summary
+
+Average sedentary time is 952 minutes approximately 16 hours that is 2/3 of the days. 
+
+Of all the daily activities, the majority of the participants are "lightly active". 
+
+The average sleep duration is 6.9 hours, which is shorted of recommended hours of 7-9 hours for Adults (18+) or 8-10 hours for teenagers (14-17 ).
+
+The average number of steps taken is 8319, which is slightly higher that what CDC studied and found to have a 50% lower risk of dying from any cause during follow-up. People who took 12,000 steps a day had a 65% lowe risk of dying than those who took only 4,000.
+
+The average active minutes average is only 23.21, which is also lower than recommended 30 minutes.
+
+#### Visualization
+
+2) Let's try to merge dailyActivity and sleep datasets. 
+    a) We can use the merge function in R:
+    merged_data <- merge(sleep, dailyActivityCleaned, by=c('id', 'date'))
+    head(merged_data)
+    b) We can also use SQL. Let's install and load "sqldf" packages
+```{r}
+install.packages("sqldf")
+library(sqldf)
+```
+```{r}
+#dailyActivityCleanedAndSleep <- sqldf("
+#  select d.*, s.*
+#  FROM dailyActivityCleaned d
+#  INNER JOIN sleep s on d.id=s.id AND d.activityDate = s.sleepDate
+#  ")
+dailyActivityCleanedAndSleep <- sqldf("
+  select d.*, s.sleep_day, total_sleep_records, total_minutes_asleep, total_time_in_bed, sleepDate, hoursInBed, hoursAsleep, minutesAwake
+  FROM dailyActivityCleaned d
+  INNER JOIN sleep s on d.id=s.id AND d.activityDate = s.sleepDate
+  ")
+str(dailyActivityCleanedAndSleep)
+```
+
+We will create a scatter plot finding some patterns between sleep duration and sedentary duration
+
+```{r}
+ggplot(data=dailyActivityCleanedAndSleep, aes(x=total_minutes_asleep, y= sedentary_minutes)) +
+geom_point(color="purple") +geom_smooth() + labs(
+  title="Sedentary Minutes vs. Total Minutes Asleep",
+  x= "Total Minutes Asleep",
+  y= "Sedentary Minutes")
+
+ggplot(data=dailyActivityCleanedAndSleep, aes(x= sedentary_minutes, y=total_minutes_asleep)) +
+geom_point(color="green") +geom_smooth() + labs(
+  title="Total Minutes Asleep vs. Sedentary Minutes",
+   x= "Sedentary Minutes",
+  y= "Total Minutes Asleep"
+ )
+```
+* From both charts, it is indicated that there is a slight inverted relationship between Sedentary Minutes and Total Minutes Asleep. While the majority of participants centered around 300-600 Total Minutes Asleep and 500-1000 of Sedentary Minutes, the curve indicates that eventually with the decrease in sleep (Total Minutes Asleep vs. Sedentary Minutes), there is an increase in sedentary duration and vice versa (Sedentary Minutes vs. Total Minutes Asleep).    
+* Although we cannot assume Sedentary Minutes are idle time (users can be exercising yoga or practicing mindfulness), if Bellabeat users want to keep their physical body not sedentary, they might want to have sufficient sleep duration.
+
+* Perhaps Bellabeat users can use their Time app to set a bed time alarm and an exercise reminder. Bellabeat could reward users who follow a good balanced schedule by giving discounts, t-shirts or other promotional items. It is a win-win situation.
+
+
+3) Let's find out when the participants average activities during the week: how many active minutes, how many steps they take, and how much calories burned according to the days of the week. 
+
+```{r}
+# Calculate average activity levels by weekday
+averageActivityWeekday <- dailyActivityCleaned %>%
+  group_by(weekday) %>%
+  summarise(
+    avg_very_active_minutes = mean(very_active_minutes, na.rm = TRUE), 
+    avg_steps = mean(total_steps, na.rm = TRUE),
+    avg_calories = mean(calories, na.rm = TRUE)
+  )
+
+# Plot average active minutes by weekday
+ggplot(data = averageActivityWeekday, aes(x = weekday, y = avg_very_active_minutes)) +
+  geom_bar(stat = "identity", fill = "purple") +
+  labs(title = "Average Active Minutes by Weekday", x = "Weekday", y = "Average Minutes") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+# Plot average steps taken by weekday
+ggplot(data = averageActivityWeekday, aes(x = weekday, y = avg_steps)) +
+  geom_bar(stat = "identity", fill = "green") +
+  labs(title = "Average Steps Taken by Weekday", x = "Weekday", y = "Average Steps") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+# Plot average calories burned by weekday
+ggplot(data = averageActivityWeekday, aes(x = weekday, y = avg_calories)) +
+  geom_bar(stat = "identity", fill = "orange") +
+  labs(title = "Average Calories Burned by Weekday", x = "Weekday", y = "Average Calories") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+* It looks like the average active minutes, average number of steps taken,  and the average calories burned are lower in the middle of the week  (Tuesday - Wednesday), and increase temporarily on Thursday, and again during the weekend on Saturday until all three datasets spike on Sunday and taper off again when the weekday starts.
+
+* Bellabeat users can remind themselves to keep going strong reaching the the middle of the week when everyone is tired and ready for the weekend. 
+
+4) Just to confirm the steps taken and calories burned are related.
+
+```{r}
+# Correlation Between Different Activity Metrics
+# Scatter plot for total steps vs. calories burned
+ggplot(data = dailyActivityCleaned, aes(x = total_steps, y = calories)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "green") +
+  labs(title = "Total Steps vs. Calories Burned", x = "Total Steps", y = "Calories Burned") +
+  theme_minimal()
+```
+* There is a positive relationship between calories burned and the steps taken. 
+
+Let's find out the intensities of workout by the hour during the day.
+
+5) Let's find out at what hour(s) the participants have the most intense activities during the day
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+
+View(hourlyIntensities)
+str(hourlyIntensities)
+
+# Group by formatted time and summarized the data
+mostIntense <- hourlyIntensities %>%
+  group_by(activityTime) %>%
+  drop_na(total_intensity) %>%
+  summarise(mean_total_int = mean(total_intensity, na.rm = TRUE)) %>%
+  arrange(parse_date_time(activityTime, orders ="I:M p"))
+
+# Convert activity time to a factor with the correct order
+mostIntense <- mostIntense %>%
+  mutate(activityTime= factor(activityTime, levels = unique(activityTime)))
+  
+# Find out if everything looks ok  
+str(mostIntense)
+
+#Plotting the data
+ggplot(data= mostIntense, aes(x=activityTime, y=mean_total_int)) + 
+  geom_col( fill="darkblue")+
+  theme(axis.text.x= element_text(angle=90, hjust=1)) +
+  labs(title="Average Total Intensity vs. Hours of the Day", x="Activity Hour", y= "Average Total Intensity")
+    
+```
+
+* The chart shows that participants are most active during 4:30 PM to 7:30 PM. The the graduate increase from 5 AM until 4:30 PM and a sharp decrease after 7:30 PM. 
+
+* Using the Time app, Bellabeat users can remind themselves to be more active throughout the day instead of peaking during those 3 hours to burn calories.
+
+6) From the weightLog dataset, here is the weight and BMI data recorded over time (April 12, 2016 - May 9, 2016) of the 8 participants without knowing their activity level.
+
+```{r}
+ggplot(data = weightLog, aes(x = activityDate, y = weight_kg, color = factor(id), group = id)) +
+  geom_line() +
+  geom_point() +
+  labs(title = "Weight Change Over Time by User", x = "Date", y = "Weight (kg)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+```{r}
+ggplot(data = weightLog, aes(x = activityDate, y = bmi, color = factor(id), group = id)) +
+  geom_line() +
+  geom_point() +
+  labs(title = "bmi Change Over Time by User", x = "Date", y = "bmi") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+```
+Here is the weight changes for the 8 participants. 
+```{r}
+# Histogram for weight changes
+ggplot(data = weightLog, aes(x = weight_loss)) +
+  geom_histogram(binwidth = 0.5, fill = "blue", color = "black") +
+  labs(title = "Distribution of Weight Changes", x = "Weight Change (kg)", y = "Frequency") +
+  theme_minimal()
+```
+* The weightLog dataset consists of only 8 participants, whereas the dailyActivityCleaned dataset includes 33 users. Due to the lack of participants overlapping dates between the two datasets, we are unable to analyze activities, total steps taken, and calories burned in relation to weight and BMI changes.
+
+* To obtain insightful information on their weight and BMI changes, Bellabeat users are encouraged to consistently log their weight data in the app. Regular and synchronized logging of these records would enable more comprehensive analyses and personalized insights.
+
+```{r}
+# Histogram for total steps
+ggplot(data = dailyActivityCleaned, aes(x = total_steps)) +
+  geom_histogram(binwidth = 1000, fill = "blue", color = "black") +
+  labs(title = "Distribution of Total Steps", x = "Total Steps", y = "Frequency") +
+  theme_minimal()
+```
+
+
+
+
+
