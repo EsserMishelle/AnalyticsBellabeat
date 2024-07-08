@@ -28,9 +28,9 @@ Urška Sršen, co-founder and Chief Creative Officer of Bellabeat, believes that
 
 #### Questions to answer:
 
-What health habits do these fitness tracker devices reveal to us as analysts?
-Do we need more information to perform additional analyses?
-Will these findings apply to Bellabeat users, and how can we use the results to increase Bellabeat's market share?
+* What health habits do these fitness tracker devices reveal to us as analysts?
+
+* Will these findings apply to Bellabeat users, and how can we use the results to add values to the users and help them to improve their health and also increase Bellabeat's market share?
 
 #### Insights to Drive Business Decisions
 
@@ -86,7 +86,7 @@ if (!dir.exists("d:/R_projects/Bellabeat")) {
 setwd("d:/R_projects/Bellabeat")
 ```
 
-The following R packages are installed
+The following R packages are installed:
 
 ```{r}
 install.packages("tidyverse")
@@ -306,9 +306,9 @@ str(dailyActivityCleaned)
 
 ### IV. ANALYZE 
 
-#### Using RStudio Posit cloud and RStudio
+#### Using RStudio Posit Cloud and RStudio
 
-First of all, let's look at the statistics summary of the datasets:
+First of all, let's look at the statistics summary of the datasets. I used RStudio Posit Cloud first and later converted everything to RStudio Desktop for easier retrieval purposes.
 
 ```{r}
 # total steps taken, distance taken, sedentary duration from dailyActivityCleaned 
@@ -518,7 +518,7 @@ geom_point(color="green") +geom_smooth() + labs(
 
 * It is unknown if the fitness tracker is water-proof or not, meaning, it is possible that the wearers removed the trackers while doing water exercise and not recording all the activities. 
 
-* We cannot assume Sedentary Minutes are idle time (users can be exercising yoga or practicing mindfulness), but if Bellabeat users want to keep their physical body not sedentary, they might want to have sufficient sleep duration.
+* We cannot assume Sedentary Minutes are idle time (users can be exercising yoga or low-impact martial art), but if Bellabeat users want to keep their physical body not sedentary, they might want to have sufficient sleep duration.
 
 5. Let's find out when the participants average activities during the week: how many active minutes, how many steps they take, and how much calories burned according to the days of the week. 
 
@@ -618,29 +618,36 @@ ggplot(data = weightLog, aes(x = weight_loss)) +
 * To obtain insightful information on their weight and BMI changes, Bellabeat users are encouraged to consistently log their weight data in the app. Regular and synchronized logging of these records would enable more comprehensive analyses and personalized insights.
 
 
-#### **The visualization charts in Tableau**
+#### **The interactive visualization charts in Tableau**
 
-    a. Here are some interactive visuals performed in Tableau in further analysis:
+I used Tableau Cloud first and then later recreated all the charts in Tableau Desktop.
 
-https://public.tableau.com/app/profile/mishelle.esser/viz/Bellabeat-EsserM/BellabeatFitnessTrackerAnalysis?publish=yes
+    a. Here are some interactive visuals performed in Tableau for further analysis:
 
-    b. The same Tableau file can also be downloaded from Google Drive:
-https://drive.google.com/file/d/1YopyTxoaRzkVk9qI9o1sN0fxMaoP1oYx/view?usp=drive_link
+[View my Tableau Visualization](https://public.tableau.com/app/profile/mishelle.esser/viz/Bellabeat-EsserM/BellabeatFitnessTrackerAnalysis?publish=yes)
+
+    b. The same Tableau file can also be downloaded from Github:
+[AnalyticsBellabeat](https://github.com/EsserMishelle/AnalyticsBellabeat)
 
     c. Here are some screenshot images: 
-      * https://drive.google.com/file/d/13Jauv1H7xf_wAyelbRX6YtEDmi2G7LiP/view?usp=drive_link
+  
+    
+      * https://github.com/EsserMishelle/AnalyticsBellabeat/blob/main/Dashboard.jpg
+      
+      * https://github.com/EsserMishelle/AnalyticsBellabeat/blob/main/UserID%20Dropdown.jpg
 
-      * https://drive.google.com/file/d/1_VMe2Ih9lkW-j4pDujAeFHdXKH_sV5Od/view?usp=drive_link
-
-      * https://drive.google.com/file/d/1fgRMvxEc-FBCk3HNCILQnSPq9JFpeAZI/view?usp=drive_link
-
+      * https://github.com/EsserMishelle/AnalyticsBellabeat/blob/main/Very%20Active.jpg
 
 
 ### V. SHARE
 
 #### Questions We Aim to Answer:
 
-What health habits do these fitness tracker devices reveal to us as analysts?
+* What health habits do these fitness tracker devices reveal to us as analysts?
+
+* Will these findings apply to Bellabeat users, and how can we use the results to add values to the users and help them to improve their health and also increase Bellabeat's market share?
+
+Here the summary of our analysis: 
 
   a) The average sleep duration is 6.9 hours, which falls short of the recommended 7-9 hours for adults or 8-10 hours for teenagers (14-17).
 
